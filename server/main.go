@@ -155,7 +155,7 @@ func main() {
 			log.Println("QUERY EXECUTION ERROR!!!!!")
 			panic(er.Error())
 		}
-		data := map[string]string{"message": "connected successfully."}
+		data := map[string]IncomingRequest{"record": newRecord}
 		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
