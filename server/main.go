@@ -59,15 +59,6 @@ func createTemperature(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// func setupDB() *sql.DB {
-// 	db_uri := os.Getenv("DB_URI")
-// 	db, err := sql.Open("mysql", )
-// 	db, err := sql.Open("mysql", db_uri)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return db
-// }
 func setupDB() *sql.DB {
 	rootCertPool := x509.NewCertPool()
 	pem, err := ioutil.ReadFile("./tc1004bdbcert.cer")
