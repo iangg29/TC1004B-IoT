@@ -131,11 +131,15 @@ func main() {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-		sqlStatement := `INSERT INTO data (temperature, humidity) VALUES ($1, $2)`
-		_, err = db.Exec(sqlStatement, newRecord.Temperature, newRecord.Humidity)
+		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
-			log.Println("QUERY ERROR!!!!!")
+			log.Println("QUERY PREPARATION ERROR!!!!!")
 			log.Fatal(err.Error())
+		}
+		_, er := stmt.Exec(newRecord.Temperature, newRecord.Humidity)
+		if er != nil {
+			log.Println("QUERY EXECUTION ERROR!!!!!")
+			panic(er.Error())
 		}
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
