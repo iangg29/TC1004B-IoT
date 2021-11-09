@@ -5,12 +5,12 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
+	"github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -87,7 +87,7 @@ func main() {
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		WriteAPIResponse(w, APIResponse{http.StatusBadRequest, "bad request"})
 	})
-	router.HandleFunc("/databaseFetch", func(rw http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query("SELECT * FROM data")
 		if err != nil {
 			log.Fatal(err)
@@ -106,6 +106,20 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
+	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
+		temperature := r.FormValue("temperature")
+		humidity := r.FormValue("humidity")
+		if temperature == "" || humidity == "" {
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		var lastID int
+		err := db.QueryRow("INSERT INTO data(temperature, humidity) VALUES ($1, $2) returning id;", temperature, humidity).Scan(&lastID)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		rw.WriteHeader(http.StatusOK)
+	}).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
