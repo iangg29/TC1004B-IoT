@@ -84,7 +84,7 @@ func createTemperature(w http.ResponseWriter, r *http.Request) {
 // 	return db
 // }
 func setupDB() *sql.DB {
-	db, err := sql.Open("mysql", os.Getenv("DB_USERNAME")+":"+os.Getenv("DB_PASSWORD")+"@ssl("+os.Getenv("DB_HOST")+":"+os.Getenv("DB_PORT")+")/"+os.Getenv("DB_DATABASE"))
+	db, err := sql.Open("mysql", os.Getenv("DB_USERNAME")+":"+os.Getenv("DB_PASSWORD")+"@tcp("+os.Getenv("DB_HOST")+":"+os.Getenv("DB_PORT")+")/"+os.Getenv("DB_DATABASE")+"?tls=true")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -94,6 +94,7 @@ func setupDB() *sql.DB {
 func main() {
 	log.Println("Loading TC1004B API version", Version)
 	db := setupDB()
+	defer db.Close()
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
