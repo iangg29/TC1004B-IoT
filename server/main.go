@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
+	"github.com/pusher/pusher-http-go"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -84,7 +85,15 @@ func setupDB() *sql.DB {
 }
 
 func main() {
+
 	log.Println("Loading TC1004B API version", Version)
+	pusherClient := pusher.Client{
+		AppID:   os.Getenv("PUSHER_APP_ID"),
+		Key:     os.Getenv("PUSHER_APP_KEY"),
+		Secret:  os.Getenv("PUSHER_APP_SECRET"),
+		Cluster: os.Getenv("PUSHER_APP_CLUSTER"),
+		Secure:  true,
+	}
 	db := setupDB()
 	defer db.Close()
 	router := mux.NewRouter()
@@ -141,6 +150,8 @@ func main() {
 			log.Println("QUERY EXECUTION ERROR!!!!!")
 			panic(er.Error())
 		}
+		data := map[string]string{"message": "connected successfully."}
+		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
