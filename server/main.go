@@ -131,13 +131,6 @@ func main() {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-		temperature := r.FormValue("temperature")
-		humidity := r.FormValue("humidity")
-		if temperature == "" || humidity == "" {
-			log.Println("VALIDATION ERROR!!!!!")
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
 		sqlStatement := `INSERT INTO data (temperature, humidity) VALUES ($1, $2)`
 		_, err = db.Exec(sqlStatement, newRecord.Temperature, newRecord.Humidity)
 		if err != nil {
