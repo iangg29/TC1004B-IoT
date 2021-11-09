@@ -116,6 +116,7 @@ func main() {
 			value := r.Header.Get("Content-Type")
 			if value != "application/json" {
 				msg := "Content-Type header is not application/json"
+				log.Println("Content-Type header is not application/json")
 				http.Error(rw, msg, http.StatusUnsupportedMediaType)
 				return
 			}
@@ -126,23 +127,27 @@ func main() {
 		var newRecord IncomingRequest
 		err := dec.Decode(&newRecord)
 		if err != nil {
+			log.Println("DECODING ERROR!!!")
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 		temperature := r.FormValue("temperature")
 		humidity := r.FormValue("humidity")
 		if temperature == "" || humidity == "" {
+			log.Println("VALIDATION ERROR!!!!!")
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 		sqlStatement := `INSERT INTO data (temperature, humidity) VALUES ($1, $2)`
 		_, err = db.Exec(sqlStatement, newRecord.Temperature, newRecord.Humidity)
 		if err != nil {
+			log.Println("QUERY ERROR!!!!!")
 			log.Fatal(err.Error())
 		}
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Println("Listening on :8080")
 }
 
 func WriteAPIResponse(w http.ResponseWriter, response APIResponse) {
