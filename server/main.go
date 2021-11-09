@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,54 +26,37 @@ type APIResponse struct {
 	Message string `json:"message"`
 }
 
-type Temperature struct {
-	Id   int     `json:"id"`
-	Data float32 `json:"data"`
-}
-
-type allTemperatures []Temperature
-
-var temps = allTemperatures{
-	{
-		Id:   1,
-		Data: 20.1,
-	},
-	{
-		Id:   2,
-		Data: 21.2,
-	},
-	{
-		Id:   3,
-		Data: 19.3,
-	},
-	{
-		Id:   4,
-		Data: 25.4,
-	},
+type DBResult struct {
+	Id          int     `json:"id"`
+	Temperature float32 `json:"temperature"`
+	Humidity    float32 `json:"humidity"`
+	CreatedAt   string  `json:"created_at"`
 }
 
 func getTemperatures(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint Hit: get temperatures")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(temps)
+	// fmt.Println("Endpoint Hit: get temperatures")
+	// w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusOK)
+	// json.NewEncoder(w).Encode(temps)
+	return
 }
 
 func createTemperature(w http.ResponseWriter, r *http.Request) {
-	var newTemperature Temperature
-	fmt.Println("Endpoint Hit: createTemperature")
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "Please insert a valid temperature.")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	json.Unmarshal(reqBody, &newTemperature)
-	newTemperature.Id = len(temps) + 1
-	temps = append(temps, newTemperature)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newTemperature)
+	// var newTemperature Temperature
+	// fmt.Println("Endpoint Hit: createTemperature")
+	// reqBody, err := ioutil.ReadAll(r.Body)
+	// if err != nil {
+	// 	fmt.Fprintf(w, "Please insert a valid temperature.")
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	return
+	// }
+	// json.Unmarshal(reqBody, &newTemperature)
+	// newTemperature.Id = len(temps) + 1
+	// temps = append(temps, newTemperature)
+	// w.Header().Set("Content-Type", "application/json")
+	// w.WriteHeader(http.StatusCreated)
+	// json.NewEncoder(w).Encode(newTemperature)
+	return
 }
 
 // func setupDB() *sql.DB {
@@ -120,10 +102,10 @@ func main() {
 			log.Fatal(err)
 		}
 		defer rows.Close()
-		var result []Temperature
+		var result []DBResult
 		for rows.Next() {
-			var temp Temperature
-			err := rows.Scan(&temp.Id, &temp.Data)
+			var temp DBResult
+			err := rows.Scan(&temp.Id, &temp.Temperature, &temp.Humidity, &temp.CreatedAt)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -133,8 +115,6 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
-	router.HandleFunc("/temperatures", getTemperatures).Methods("GET")
-	router.HandleFunc("/temperatures", createTemperature).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
