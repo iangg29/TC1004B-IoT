@@ -33,6 +33,11 @@ type DBResult struct {
 	CreatedAt   string  `json:"created_at"`
 }
 
+type IncomingRequest struct {
+	Temperature float32 `json:"temperature"`
+	Humidity    float32 `json:"humidity"`
+}
+
 func getTemperatures(w http.ResponseWriter, r *http.Request) {
 	// fmt.Println("Endpoint Hit: get temperatures")
 	// w.Header().Set("Content-Type", "application/json")
@@ -107,14 +112,31 @@ func main() {
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Content-Type") != "" {
+			value := r.Header.Get("Content-Type")
+			if value != "application/json" {
+				msg := "Content-Type header is not application/json"
+				http.Error(rw, msg, http.StatusUnsupportedMediaType)
+				return
+			}
+		}
+		r.Body = http.MaxBytesReader(rw, r.Body, 1048576)
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+		var newRecord IncomingRequest
+		err := dec.Decode(&newRecord)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
 		temperature := r.FormValue("temperature")
 		humidity := r.FormValue("humidity")
 		if temperature == "" || humidity == "" {
-			rw.WriteHeader(http.StatusBadRequest)
+			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
-		var lastID int
-		err := db.QueryRow("INSERT INTO data(temperature, humidity) VALUES ($1, $2) returning id;", temperature, humidity).Scan(&lastID)
+		sqlStatement := `INSERT INTO data (temperature, humidity) VALUES ($1, $2)`
+		_, err = db.Exec(sqlStatement, newRecord.Temperature, newRecord.Humidity)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
