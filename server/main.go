@@ -84,17 +84,22 @@ func setupDB() *sql.DB {
 	return db
 }
 
+func setUpPusher() *pusher.Client {
+	pusherClient := pusher.Client{
+		AppID:   os.Getenv("PUSHER_APP_ID"),
+		Key:     os.Getenv("PUSHER_KEY"),
+		Secret:  os.Getenv("PUSHER_SECRET"),
+		Cluster: os.Getenv("PUSHER_CLUSTER"),
+		Secure:  true,
+	}
+	return &pusherClient
+}
+
 func main() {
 
 	log.Println("Loading TC1004B API version", Version)
-	pusherClient := pusher.Client{
-		AppID:   os.Getenv("PUSHER_APP_ID"),
-		Key:     os.Getenv("PUSHER_APP_KEY"),
-		Secret:  os.Getenv("PUSHER_APP_SECRET"),
-		Cluster: os.Getenv("PUSHER_APP_CLUSTER"),
-		Secure:  true,
-	}
 	db := setupDB()
+	pusherClient := setUpPusher()
 	defer db.Close()
 	router := mux.NewRouter()
 
