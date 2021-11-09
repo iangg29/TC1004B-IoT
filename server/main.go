@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
 
@@ -71,20 +74,50 @@ func createTemperature(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newTemperature)
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+// func setupDB() *sql.DB {
+// 	db_uri := os.Getenv("DB_URI")
+// 	db, err := sql.Open("mysql", )
+// 	db, err := sql.Open("mysql", db_uri)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return db
+// }
+func setupDB() *sql.DB {
+	db, err := sql.Open("mysql", os.Getenv("DB_USERNAME")+":"+os.Getenv("DB_PASSWORD")+"@ssl("+os.Getenv("DB_HOST")+":"+os.Getenv("DB_PORT")+")/"+os.Getenv("DB_DATABASE"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db
 }
 
 func main() {
 	log.Println("Loading TC1004B API version", Version)
-
+	db := setupDB()
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		WriteAPIResponse(w, APIResponse{http.StatusBadRequest, "bad request"})
 	})
-
-	router.HandleFunc("/", index)
+	router.HandleFunc("/databaseFetch", func(rw http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT * FROM data")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+		var result []Temperature
+		for rows.Next() {
+			var temp Temperature
+			err := rows.Scan(&temp.Id, &temp.Data)
+			if err != nil {
+				log.Fatal(err)
+			}
+			result = append(result, temp)
+		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.WriteHeader(http.StatusOK)
+		json.NewEncoder(rw).Encode(result)
+	}).Methods("GET")
 	router.HandleFunc("/temperatures", getTemperatures).Methods("GET")
 	router.HandleFunc("/temperatures", createTemperature).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8080", router))
