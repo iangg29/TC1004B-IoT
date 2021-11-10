@@ -15,7 +15,7 @@ import {doughnutLegends, doughnutOptions, lineLegends, lineOptions,} from '../ut
 
 function Dashboard() {
     const [page, setPage] = useState(1)
-    const [alive, setAlive] = useState(false);
+    const [alive, setAlive] = useState(true);
     const [records, setRecords] = useState([])
     const [total, setTotal] = useState(0);
 
@@ -28,18 +28,26 @@ function Dashboard() {
     useEffect(() => {
         const interval = setInterval(async () => {
             await axios.get("https://api.ian.software/health").then(res => {
-                setAlive(res.data.alive);
+                setAlive(res.data.alive)
             }).catch(err => {
-                setAlive(false);
+                setAlive(false)
             });
         }, 2000);
-    }, []);
-
-    // on page change, load new sliced data
-    // here you would make another server request for new data
+        return () => clearInterval(interval)
+    });
+    
     useEffect(() => {
-        //setData(response.slice((page - 1) * resultsPerPage, page * resultsPerPage))
-    }, [page])
+        getData(page, resultsPerPage)
+    }, [page, resultsPerPage])
+
+    async function getData(page, resultsPerPage) {
+        await axios.get("https://api.ian.software/data").then(res => {
+            console.log(res)
+            //setData(response.slice((page - 1) * resultsPerPage, page * resultsPerPage))
+        }).catch(err => {
+            console.error(err)
+        })
+    }
 
     return (
         <>
