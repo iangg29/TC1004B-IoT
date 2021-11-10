@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -29,6 +30,12 @@ type APIResponse struct {
 
 type DBResult struct {
 	Id          int     `json:"id"`
+	Temperature float32 `json:"temperature"`
+	Humidity    float32 `json:"humidity"`
+	CreatedAt   string  `json:"created_at"`
+}
+
+type EventRecord struct {
 	Temperature float32 `json:"temperature"`
 	Humidity    float32 `json:"humidity"`
 	CreatedAt   string  `json:"created_at"`
@@ -155,7 +162,11 @@ func main() {
 			log.Println("QUERY EXECUTION ERROR!!!!!")
 			panic(er.Error())
 		}
-		data := map[string]IncomingRequest{"record": newRecord}
+		var eventRecord EventRecord
+		eventRecord.Temperature = newRecord.Temperature
+		eventRecord.Humidity = newRecord.Humidity
+		eventRecord.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+		data := map[string]EventRecord{"record": eventRecord}
 		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
