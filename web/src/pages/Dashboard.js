@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react'
+import axios from 'axios'
 
 import CTA from '../components/CTA'
 import InfoCard from '../components/Cards/InfoCard'
@@ -8,37 +9,34 @@ import ChartLegend from '../components/Chart/ChartLegend'
 import PageTitle from '../components/Typography/PageTitle'
 import {HeartIcon, MoonIcon, SunIcon, TablesIcon} from '../icons'
 import RoundIcon from '../components/RoundIcon'
-import response from '../utils/demo/tableData'
-import {
-    Pagination,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableFooter,
-    TableHeader,
-    TableRow,
-} from '@windmill/react-ui'
+import {Pagination, Table, TableBody, TableCell, TableContainer, TableFooter, TableHeader,} from '@windmill/react-ui'
 
 import {doughnutLegends, doughnutOptions, lineLegends, lineOptions,} from '../utils/demo/chartsData'
 
 function Dashboard() {
     const [page, setPage] = useState(1)
-    const [data, setData] = useState([])
+    const [alive, setAlive] = useState(false);
+    const [records, setRecords] = useState([])
+    const [total, setTotal] = useState(0);
 
-    // pagination setup
     const resultsPerPage = 10
-    const totalResults = response.length
 
-    // pagination change control
     function onPageChange(p) {
         setPage(p)
     }
 
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            await axios.get("https://api.ian.software/health").then(res => {
+                console.log(res);
+            })
+        }, 1000);
+    }, []);
+
     // on page change, load new sliced data
     // here you would make another server request for new data
     useEffect(() => {
-        setData(response.slice((page - 1) * resultsPerPage, page * resultsPerPage))
+        //setData(response.slice((page - 1) * resultsPerPage, page * resultsPerPage))
     }, [page])
 
     return (
@@ -97,6 +95,7 @@ function Dashboard() {
                         </tr>
                     </TableHeader>
                     <TableBody>
+                        {/*
                         {data.map((user, i) => (
                             <TableRow key={i}>
                                 <TableCell>
@@ -113,11 +112,13 @@ function Dashboard() {
                                 </TableCell>
                             </TableRow>
                         ))}
+
+                        */}
                     </TableBody>
                 </Table>
                 <TableFooter>
                     <Pagination
-                        totalResults={totalResults}
+                        totalResults={0}
                         resultsPerPage={resultsPerPage}
                         label="Table navigation"
                         onChange={onPageChange}
