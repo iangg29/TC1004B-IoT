@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pusher/pusher-http-go"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -102,6 +103,13 @@ func setUpPusher() *pusher.Client {
 	return &pusherClient
 }
 
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	io.WriteString(w, `{"alive": true}`)
+}
+
 func main() {
 
 	log.Println("Loading TC1004B API version", Version)
@@ -114,7 +122,7 @@ func main() {
 		WriteAPIResponse(w, APIResponse{http.StatusBadRequest, "bad request"})
 	})
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("[ENDPOINT] Hit GET (/data).");
+		log.Println("[ENDPOINT] Hit GET (/data).")
 		rows, err := db.Query("SELECT * FROM data")
 		if err != nil {
 			log.Fatal(err)
@@ -134,7 +142,11 @@ func main() {
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("[ENDPOINT] Hit POST (/data).");
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		if r.Method == http.MethodOptions {
+			return
+		}
+		log.Println("[ENDPOINT] Hit POST (/data).")
 		if r.Header.Get("Content-Type") != "" {
 			value := r.Header.Get("Content-Type")
 			if value != "application/json" {
@@ -172,6 +184,7 @@ func main() {
 		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
+	router.HandleFunc("/health", HealthCheckHandler).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 	log.Println("Listening on :8080")
 }
