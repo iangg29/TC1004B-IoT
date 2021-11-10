@@ -1,10 +1,9 @@
 import React from 'react';
-import './App.css';
 
 function App() {
     return (
-        <div className="App">
-            <h2>Hello</h2>
+        <div className="text-3xl">
+            <h2>Internet of Things</h2>
         </div>
     );
 }
