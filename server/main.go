@@ -114,6 +114,7 @@ func main() {
 		WriteAPIResponse(w, APIResponse{http.StatusBadRequest, "bad request"})
 	})
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
+		log.Println("[ENDPOINT] Hit GET (/data).");
 		rows, err := db.Query("SELECT * FROM data")
 		if err != nil {
 			log.Fatal(err)
@@ -133,6 +134,7 @@ func main() {
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
+		log.Println("[ENDPOINT] Hit POST (/data).");
 		if r.Header.Get("Content-Type") != "" {
 			value := r.Header.Get("Content-Type")
 			if value != "application/json" {
