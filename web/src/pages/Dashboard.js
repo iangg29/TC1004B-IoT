@@ -28,9 +28,11 @@ function Dashboard() {
     useEffect(() => {
         const interval = setInterval(async () => {
             await axios.get("https://api.ian.software/health").then(res => {
-                console.log(res);
-            })
-        }, 1000);
+                setAlive(res.data.alive);
+            }).catch(err => {
+                setAlive(false);
+            });
+        }, 2000);
     }, []);
 
     // on page change, load new sliced data
@@ -74,11 +76,11 @@ function Dashboard() {
                     />
                 </InfoCard>
 
-                <InfoCard title="Estatus" value="OFF">
+                <InfoCard title="Estatus" value={(alive ? "ON" : "OFF")}>
                     <RoundIcon
                         icon={HeartIcon}
-                        iconColorClass="text-teal-500 dark:text-teal-100"
-                        bgColorClass="bg-teal-100 dark:bg-teal-500"
+                        iconColorClass={(alive ? "text-teal-500 dark:text-teal-100" : "text-red-500 dark:text-red-100")}
+                        bgColorClass={(alive ? "bg-teal-100 dark:bg-teal-500" : "bg-red-100 dark:bg-red-500")}
                         className="mr-4"
                     />
                 </InfoCard>
