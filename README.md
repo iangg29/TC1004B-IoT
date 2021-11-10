@@ -22,6 +22,9 @@
 <p> Debido a la naturaleza del problema, el sector que más se vería beneficiado de nuestro proyecto sería el agricultor. De esta manera ellos podrían ubicar los sensores en distintas partes de los silos para monitorear la creación de distintos puntos calientes. </p>
 </div>
 
+## Arquitectura:
+<img src="images/Network.jpg" alt="Arquitectura IoT" />
+
 ## Sensores:
 
 <div style="text-align: justify">
