@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pusher/pusher-http-go"
 	"io"
@@ -13,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,14 +38,14 @@ type DBResult struct {
 }
 
 type EventRecord struct {
-	Temperature string `json:"temperature"`
-	Humidity    string `json:"humidity"`
-	CreatedAt   string `json:"created_at"`
+	Temperature float64 `json:"temperature"`
+	Humidity    float64 `json:"humidity"`
+	CreatedAt   string  `json:"created_at"`
 }
 
 type IncomingRequest struct {
-	Temperature float32 `json:"temperature"`
-	Humidity    float32 `json:"humidity"`
+	Temperature float64 `json:"temperature"`
+	Humidity    float64 `json:"humidity"`
 }
 
 func setupDB() *sql.DB {
@@ -152,8 +152,8 @@ func main() {
 			panic(er.Error())
 		}
 		var eventRecord EventRecord
-		eventRecord.Temperature = fmt.Sprintf("%f", newRecord.Temperature)
-		eventRecord.Humidity = fmt.Sprintf("%f", newRecord.Humidity)
+		eventRecord.Temperature = newRecord.Temperature
+		eventRecord.Humidity = newRecord.Humidity
 		eventRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
 		data := map[string]EventRecord{"record": eventRecord}
 		pusherClient.Trigger("data-fetch", "new-record", data)
@@ -165,8 +165,8 @@ func main() {
 		rw.Header().Set("Content-Type", "application/json")
 		params := mux.Vars(r)
 		var newRecord EventRecord
-		newRecord.Temperature = params["temperature"]
-		newRecord.Humidity = params["humidity"]
+		newRecord.Temperature, _ = strconv.ParseFloat(params["temperature"], 64)
+		newRecord.Humidity, _ = strconv.ParseFloat(params["humidity"], 64)
 		newRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
 
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
