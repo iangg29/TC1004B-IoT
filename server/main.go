@@ -161,15 +161,23 @@ func main() {
 	}).Methods("POST")
 	router.HandleFunc("/payload/upload", func(rw http.ResponseWriter, r *http.Request) {
 		log.Println("[ENDPOINT] Hit GET (/payload/upload).")
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
-		rw.Header().Set("Content-Type", "application/json")
-		params := mux.Vars(r)
+		temperature, ok := r.URL.Query()["temperature"]
+		if !ok || len(temperature[0]) < 1 {
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		humidity, ok := r.URL.Query()["humidity"]
+		if !ok || len(humidity[0]) < 1 {
+			rw.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		temperatureVar := temperature[0]
+		humidityVar := humidity[0]
 		var newRecord EventRecord
-		newRecord.Temperature, _ = strconv.ParseFloat(params["temperature"], 64)
-		newRecord.Humidity, _ = strconv.ParseFloat(params["humidity"], 64)
+		newRecord.Temperature, _ = strconv.ParseFloat(string(temperatureVar), 64)
+		newRecord.Humidity, _ = strconv.ParseFloat(string(humidityVar), 64)
 		newRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
-		log.Println("TEMPERATURA BE LIKE: ", newRecord.Temperature)
-		log.Println("HUMIDITY BE LIKE: ", newRecord.Humidity)
+
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
 			log.Println("QUERY PREPARATION ERROR!!!!!")
@@ -183,6 +191,7 @@ func main() {
 		data := map[string]EventRecord{"record": newRecord}
 		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
+
 	}).Methods("GET")
 	router.HandleFunc("/health", HealthCheckHandler).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
