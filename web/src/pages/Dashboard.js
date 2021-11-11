@@ -9,7 +9,16 @@ import ChartLegend from '../components/Chart/ChartLegend'
 import PageTitle from '../components/Typography/PageTitle'
 import {HeartIcon, MoonIcon, SunIcon, TablesIcon} from '../icons'
 import RoundIcon from '../components/RoundIcon'
-import {Pagination, Table, TableBody, TableCell, TableContainer, TableFooter, TableHeader,} from '@windmill/react-ui'
+import {
+    Pagination,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableFooter,
+    TableHeader,
+    TableRow,
+} from '@windmill/react-ui'
 
 import {doughnutLegends, doughnutOptions, lineLegends, lineOptions,} from '../utils/demo/chartsData'
 
@@ -35,15 +44,15 @@ function Dashboard() {
         }, 2000);
         return () => clearInterval(interval)
     });
-    
+
     useEffect(() => {
         getData(page, resultsPerPage)
     }, [page, resultsPerPage])
 
     async function getData(page, resultsPerPage) {
         await axios.get("https://api.ian.software/data").then(res => {
-            console.log(res)
-            //setData(response.slice((page - 1) * resultsPerPage, page * resultsPerPage))
+            setRecords(res.data.slice((page - 1) * resultsPerPage, page * resultsPerPage))
+            setTotal(records.length)
         }).catch(err => {
             console.error(err)
         })
@@ -105,30 +114,27 @@ function Dashboard() {
                         </tr>
                     </TableHeader>
                     <TableBody>
-                        {/*
-                        {data.map((user, i) => (
+                        {records.map((record, i) => (
                             <TableRow key={i}>
                                 <TableCell>
-                                    <span className="text-sm">$ {user.amount}</span>
+                                    <span className="text-sm">{record.id}</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-sm">$ {user.amount}</span>
+                                    <span className="text-sm">{record.temperature} ºC</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-sm">$ {user.amount}</span>
+                                    <span className="text-sm">{record.humidity}%</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-sm">{new Date(user.date).toLocaleDateString()}</span>
+                                    <span className="text-sm">{new Date(record.created_at).toLocaleDateString()}</span>
                                 </TableCell>
                             </TableRow>
                         ))}
-
-                        */}
                     </TableBody>
                 </Table>
                 <TableFooter>
                     <Pagination
-                        totalResults={0}
+                        totalResults={total}
                         resultsPerPage={resultsPerPage}
                         label="Table navigation"
                         onChange={onPageChange}
