@@ -168,7 +168,8 @@ func main() {
 		newRecord.Temperature, _ = strconv.ParseFloat(params["temperature"], 64)
 		newRecord.Humidity, _ = strconv.ParseFloat(params["humidity"], 64)
 		newRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
-
+		log.Println("TEMPERATURA BE LIKE: ", newRecord.Temperature)
+		log.Println("HUMIDITY BE LIKE: ", newRecord.Humidity)
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
 			log.Println("QUERY PREPARATION ERROR!!!!!")
