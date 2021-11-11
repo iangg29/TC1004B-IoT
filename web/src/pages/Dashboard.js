@@ -66,7 +66,7 @@ function Dashboard() {
 
             {/* <!-- Cards --> */}
             <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
-                <InfoCard title="Total de registros" value="6389">
+                <InfoCard title="Total de registros" value={total}>
                     <RoundIcon
                         icon={TablesIcon}
                         iconColorClass="text-orange-500 dark:text-orange-100"
@@ -75,7 +75,7 @@ function Dashboard() {
                     />
                 </InfoCard>
 
-                <InfoCard title="Temperatura promedio" value="19 ºC">
+                <InfoCard title="Temperatura promedio" value="00 ºC">
                     <RoundIcon
                         icon={SunIcon}
                         iconColorClass="text-green-500 dark:text-green-100"
@@ -84,7 +84,7 @@ function Dashboard() {
                     />
                 </InfoCard>
 
-                <InfoCard title="Humedad promedio" value="36%">
+                <InfoCard title="Humedad promedio" value="00%">
                     <RoundIcon
                         icon={MoonIcon}
                         iconColorClass="text-blue-500 dark:text-blue-100"
@@ -126,7 +126,7 @@ function Dashboard() {
                                     <span className="text-sm">{record.humidity}%</span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="text-sm">{new Date(record.created_at).toLocaleDateString()}</span>
+                                    <span className="text-sm">{record.created_at}</span>
                                 </TableCell>
                             </TableRow>
                         ))}
