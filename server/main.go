@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pusher/pusher-http-go"
 	"io"
@@ -37,40 +38,14 @@ type DBResult struct {
 }
 
 type EventRecord struct {
-	Temperature float32 `json:"temperature"`
-	Humidity    float32 `json:"humidity"`
-	CreatedAt   string  `json:"created_at"`
+	Temperature string `json:"temperature"`
+	Humidity    string `json:"humidity"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type IncomingRequest struct {
 	Temperature float32 `json:"temperature"`
 	Humidity    float32 `json:"humidity"`
-}
-
-func getTemperatures(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("Endpoint Hit: get temperatures")
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusOK)
-	// json.NewEncoder(w).Encode(temps)
-	return
-}
-
-func createTemperature(w http.ResponseWriter, r *http.Request) {
-	// var newTemperature Temperature
-	// fmt.Println("Endpoint Hit: createTemperature")
-	// reqBody, err := ioutil.ReadAll(r.Body)
-	// if err != nil {
-	// 	fmt.Fprintf(w, "Please insert a valid temperature.")
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
-	// json.Unmarshal(reqBody, &newTemperature)
-	// newTemperature.Id = len(temps) + 1
-	// temps = append(temps, newTemperature)
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusCreated)
-	// json.NewEncoder(w).Encode(newTemperature)
-	return
 }
 
 func setupDB() *sql.DB {
@@ -141,12 +116,12 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
-	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/payload/upload", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		if r.Method == http.MethodOptions {
 			return
 		}
-		log.Println("[ENDPOINT] Hit POST (/data).")
+		log.Println("[ENDPOINT] Hit POST (/payload/upload).")
 		if r.Header.Get("Content-Type") != "" {
 			value := r.Header.Get("Content-Type")
 			if value != "application/json" {
@@ -177,13 +152,37 @@ func main() {
 			panic(er.Error())
 		}
 		var eventRecord EventRecord
-		eventRecord.Temperature = newRecord.Temperature
-		eventRecord.Humidity = newRecord.Humidity
-		eventRecord.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
+		eventRecord.Temperature = fmt.Sprintf("%f", newRecord.Temperature)
+		eventRecord.Humidity = fmt.Sprintf("%f", newRecord.Humidity)
+		eventRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
 		data := map[string]EventRecord{"record": eventRecord}
 		pusherClient.Trigger("data-fetch", "new-record", data)
 		rw.WriteHeader(http.StatusOK)
 	}).Methods("POST")
+	router.HandleFunc("/payload/upload", func(rw http.ResponseWriter, r *http.Request) {
+		log.Println("[ENDPOINT] Hit GET (/payload/upload).")
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		rw.Header().Set("Content-Type", "application/json")
+		params := mux.Vars(r)
+		var newRecord EventRecord
+		newRecord.Temperature = params["temperature"]
+		newRecord.Humidity = params["humidity"]
+		newRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
+
+		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
+		if err != nil {
+			log.Println("QUERY PREPARATION ERROR!!!!!")
+			log.Fatal(err.Error())
+		}
+		_, er := stmt.Exec(newRecord.Temperature, newRecord.Humidity)
+		if er != nil {
+			log.Println("QUERY EXECUTION ERROR!!!!!")
+			panic(er.Error())
+		}
+		data := map[string]EventRecord{"record": newRecord}
+		pusherClient.Trigger("data-fetch", "new-record", data)
+		rw.WriteHeader(http.StatusOK)
+	}).Methods("GET")
 	router.HandleFunc("/health", HealthCheckHandler).Methods("GET")
 	log.Fatal(http.ListenAndServe(":8080", router))
 	log.Println("Listening on :8080")
