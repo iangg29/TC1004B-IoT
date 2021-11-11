@@ -103,6 +103,19 @@ function Dashboard() {
                 </InfoCard>
             </div>
 
+            <PageTitle>Historial de Registros</PageTitle>
+            <div className="grid gap-6 mb-8 md:grid-cols-2">
+                <ChartCard title="Revenue">
+                    <Doughnut {...doughnutOptions} />
+                    <ChartLegend legends={doughnutLegends}/>
+                </ChartCard>
+
+                <ChartCard title="Traffic">
+                    <Line {...lineOptions} />
+                    <ChartLegend legends={lineLegends}/>
+                </ChartCard>
+            </div>
+
             <TableContainer>
                 <Table>
                     <TableHeader>
@@ -134,26 +147,13 @@ function Dashboard() {
                 </Table>
                 <TableFooter>
                     <Pagination
-                        totalResults={total}
+                        totalResults={records.length}
                         resultsPerPage={resultsPerPage}
                         label="Table navigation"
                         onChange={onPageChange}
                     />
                 </TableFooter>
             </TableContainer>
-
-            <PageTitle>Charts</PageTitle>
-            <div className="grid gap-6 mb-8 md:grid-cols-2">
-                <ChartCard title="Revenue">
-                    <Doughnut {...doughnutOptions} />
-                    <ChartLegend legends={doughnutLegends}/>
-                </ChartCard>
-
-                <ChartCard title="Traffic">
-                    <Line {...lineOptions} />
-                    <ChartLegend legends={lineLegends}/>
-                </ChartCard>
-            </div>
         </>
     )
 }
