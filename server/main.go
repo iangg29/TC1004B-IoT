@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pusher/pusher-http-go"
+	"github.com/rs/cors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -86,11 +87,13 @@ func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	log.Println("Loading TC1004B API version", Version)
+
 	db := setupDB()
 	pusherClient := setUpPusher()
+
 	defer db.Close()
+
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -180,7 +183,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		newRecord.CreatedAt = time.Now().In(location).Format("15:04:05 01-02-2006")
+		newRecord.CreatedAt = time.Now().In(location).Format("15:04:05 02-01-2006")
 
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
@@ -198,8 +201,15 @@ func main() {
 
 	}).Methods("GET")
 	router.HandleFunc("/health", HealthCheckHandler).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8080", router))
-	log.Println("Listening on :8080")
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST"},
+	})
+
+	handler := c.Handler(router)
+
+	log.Fatal(http.ListenAndServe(":8080", handler))
 }
 
 func WriteAPIResponse(w http.ResponseWriter, response APIResponse) {
