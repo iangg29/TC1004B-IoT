@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import axios from 'axios'
+import Pusher from "pusher";
 
 import CTA from '../components/CTA'
 import InfoCard from '../components/Cards/InfoCard'
@@ -22,13 +23,15 @@ import {
 
 import {doughnutLegends, doughnutOptions, lineLegends, lineOptions,} from '../utils/demo/chartsData'
 
+Pusher.logToConsole = true
+
 function Dashboard() {
     const [page, setPage] = useState(1)
     const [alive, setAlive] = useState(true);
     const [records, setRecords] = useState([])
     const [total, setTotal] = useState(0);
 
-    const resultsPerPage = 10
+    const resultsPerPage = 100
 
     function onPageChange(p) {
         setPage(p)
@@ -49,10 +52,17 @@ function Dashboard() {
         getData(page, resultsPerPage)
     }, [page, resultsPerPage])
 
+    useEffect(() => {
+        const pusher = new Pusher('4201760e3b14e9fef08d', {
+            cluster: 'us2'
+        });
+
+    })
+
     async function getData(page, resultsPerPage) {
         await axios.get("https://api.ian.software/data").then(res => {
+            setTotal(res.data.length)
             setRecords(res.data.slice((page - 1) * resultsPerPage, page * resultsPerPage))
-            setTotal(records.length)
         }).catch(err => {
             console.error(err)
         })
@@ -105,12 +115,12 @@ function Dashboard() {
 
             <PageTitle>Historial de Registros</PageTitle>
             <div className="grid gap-6 mb-8 md:grid-cols-2">
-                <ChartCard title="Revenue">
-                    <Doughnut {...doughnutOptions} />
-                    <ChartLegend legends={doughnutLegends}/>
+                <ChartCard title="Temperatura vs Humedad">
+                    <Line {...lineOptions} />
+                    <ChartLegend legends={lineLegends}/>
                 </ChartCard>
 
-                <ChartCard title="Traffic">
+                <ChartCard title="Temperatura">
                     <Line {...lineOptions} />
                     <ChartLegend legends={lineLegends}/>
                 </ChartCard>
@@ -147,7 +157,7 @@ function Dashboard() {
                 </Table>
                 <TableFooter>
                     <Pagination
-                        totalResults={records.length}
+                        totalResults={total}
                         resultsPerPage={resultsPerPage}
                         label="Table navigation"
                         onChange={onPageChange}
