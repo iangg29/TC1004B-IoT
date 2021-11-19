@@ -176,7 +176,11 @@ func main() {
 		var newRecord EventRecord
 		newRecord.Temperature, _ = strconv.ParseFloat(string(temperatureVar), 64)
 		newRecord.Humidity, _ = strconv.ParseFloat(string(humidityVar), 64)
-		newRecord.CreatedAt = time.Now().Format("15:04:05 2006-01-02")
+		location, err := time.LoadLocation("America/Mexico_City")
+		if err != nil {
+			log.Fatal(err)
+		}
+		newRecord.CreatedAt = time.Now().In(location).Format("15:04:05 01-02-2006")
 
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
