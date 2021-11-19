@@ -5,7 +5,7 @@ import Pusher from "pusher";
 import CTA from '../components/CTA'
 import InfoCard from '../components/Cards/InfoCard'
 import ChartCard from '../components/Chart/ChartCard'
-import {Doughnut, Line} from 'react-chartjs-2'
+import {Line} from 'react-chartjs-2'
 import ChartLegend from '../components/Chart/ChartLegend'
 import PageTitle from '../components/Typography/PageTitle'
 import {HeartIcon, MoonIcon, SunIcon, TablesIcon} from '../icons'
@@ -21,7 +21,7 @@ import {
     TableRow,
 } from '@windmill/react-ui'
 
-import {doughnutLegends, doughnutOptions, lineLegends, lineOptions,} from '../utils/demo/chartsData'
+import {lineLegends, lineOptions,} from '../utils/demo/chartsData'
 
 Pusher.logToConsole = true
 
@@ -39,7 +39,7 @@ function Dashboard() {
 
     useEffect(() => {
         const interval = setInterval(async () => {
-            await axios.get("https://api.ian.software/health").then(res => {
+            await axios.get("https://api.tc1004b.ian.software/health").then(res => {
                 setAlive(res.data.alive)
             }).catch(err => {
                 setAlive(false)
@@ -60,7 +60,7 @@ function Dashboard() {
     })
 
     async function getData(page, resultsPerPage) {
-        await axios.get("https://api.ian.software/data").then(res => {
+        await axios.get("https://api.tc1004b.ian.software/data").then(res => {
             setTotal(res.data.length)
             setRecords(res.data.slice((page - 1) * resultsPerPage, page * resultsPerPage))
         }).catch(err => {

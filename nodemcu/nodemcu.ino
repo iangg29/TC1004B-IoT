@@ -30,7 +30,7 @@ DHT dht(dht_dpin, DHTTYPE);
 const char *ssid = "network";
 const char *password = "IansHotspot29";
 
-const char *serverName = "api.ian.software";
+const char *serverName = "api.tc1004b.ian.software";
 
 const int httpPort = 443;
 
