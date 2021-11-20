@@ -57,8 +57,8 @@ function Dashboard() {
         })
         const channel = pusher.subscribe('data-fetch')
         channel.bind('new-record', data => {
-            setTotal(total+1)
-            console.log(data.record)
+            setTotal(total + 1)
+            setRecords({...records, data})
         });
     })
 
