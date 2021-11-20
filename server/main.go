@@ -101,7 +101,7 @@ func main() {
 	})
 	router.HandleFunc("/data", func(rw http.ResponseWriter, r *http.Request) {
 		log.Println("[ENDPOINT] Hit GET (/data).")
-		rows, err := db.Query("SELECT * FROM data")
+		rows, err := db.Query("SELECT * FROM data ORDER BY created_at DESC")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -183,7 +183,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		newRecord.CreatedAt = time.Now().In(location).Format("15:04:05 02-01-2006")
+		newRecord.CreatedAt = time.Now().In(location).Format("2006-01-02 15:04:05")
 
 		stmt, err := db.Prepare("INSERT INTO data (temperature, humidity) VALUES (?, ?)")
 		if err != nil {
