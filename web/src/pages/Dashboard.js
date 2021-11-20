@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import axios from 'axios'
-import Pusher from "pusher";
+import Pusher from 'pusher-js'
 
 import CTA from '../components/CTA'
 import InfoCard from '../components/Cards/InfoCard'
@@ -23,15 +23,13 @@ import {
 
 import {lineLegends, lineOptions,} from '../utils/demo/chartsData'
 
-Pusher.logToConsole = true
-
 function Dashboard() {
     const [page, setPage] = useState(1)
     const [alive, setAlive] = useState(true);
     const [records, setRecords] = useState([])
     const [total, setTotal] = useState(0);
 
-    const resultsPerPage = 100
+    const resultsPerPage = 50
 
     function onPageChange(p) {
         setPage(p)
@@ -53,10 +51,15 @@ function Dashboard() {
     }, [page, resultsPerPage])
 
     useEffect(() => {
-        const pusher = new Pusher('4201760e3b14e9fef08d', {
-            cluster: 'us2'
+        Pusher.logToConsole = true;
+        const pusher = new Pusher(process.env.REACT_APP_PUSHER_KEY, {
+            cluster: process.env.REACT_APP_PUSHER_CLUSTER,
+            encrypted: true
         });
-
+        const channel = pusher.subscribe('data-fetch');
+        channel.bind('new-record', data => {
+            console.log(data);
+        });
     })
 
     async function getData(page, resultsPerPage) {
@@ -74,7 +77,6 @@ function Dashboard() {
 
             <CTA/>
 
-            {/* <!-- Cards --> */}
             <div className="grid gap-6 mb-8 md:grid-cols-2 xl:grid-cols-4">
                 <InfoCard title="Total de registros" value={total}>
                     <RoundIcon
