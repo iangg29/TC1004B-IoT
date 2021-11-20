@@ -54,10 +54,11 @@ function Dashboard() {
         const pusher = new Pusher(process.env.REACT_APP_PUSHER_KEY, {
             cluster: process.env.REACT_APP_PUSHER_CLUSTER,
             encrypted: true
-        });
-        const channel = pusher.subscribe('data-fetch');
+        })
+        const channel = pusher.subscribe('data-fetch')
         channel.bind('new-record', data => {
-            console.log(data);
+            setTotal(total+1)
+            console.log(data.record)
         });
     })
 
