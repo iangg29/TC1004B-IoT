@@ -5,12 +5,7 @@ import App from './App'
 import {SidebarProvider} from './context/SidebarContext'
 import ThemedSuspense from './components/ThemedSuspense'
 import {Windmill} from '@windmill/react-ui'
-import * as serviceWorker from './serviceWorker'
 
-// if (process.env.NODE_ENV !== 'production') {
-//   const axe = require('react-axe')
-//   axe(React, ReactDOM, 1000)
-// }
 
 ReactDOM.render(
     <SidebarProvider>
@@ -22,5 +17,3 @@ ReactDOM.render(
     </SidebarProvider>,
     document.getElementById('root')
 )
-
-serviceWorker.register()
