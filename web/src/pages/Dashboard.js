@@ -61,8 +61,8 @@ class Dashboard extends Component {
             }
             this.setState({
                 total: this.state.total + 1,
-                graphData: [...this.state.graphData, newRecord],
-                records: [...this.state.records, newRecord]
+                graphData: [newRecord, ...this.state.graphData],
+                records: [newRecord, ...this.state.records]
             })
         });
     }
