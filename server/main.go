@@ -125,7 +125,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		var response = APIResponse{Code: 200, Message: "All movies have been deleted successfully!"}
+		var response = APIResponse{Code: 200, Message: "All records have been deleted successfully!"}
 		rw.Header().Set("Content-Type", "application/json")
 		rw.WriteHeader(http.StatusOK)
 		json.NewEncoder(rw).Encode(response)
