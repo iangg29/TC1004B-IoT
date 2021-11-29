@@ -119,6 +119,17 @@ func main() {
 		rw.WriteHeader(http.StatusOK)
 		json.NewEncoder(rw).Encode(result)
 	}).Methods("GET")
+	router.HandleFunc("/data/delete/all", func(rw http.ResponseWriter, r *http.Request) {
+		log.Println("[ENDPOINT] Hit GET (/data/delete/all).")
+		_, err := db.Exec("DELETE FROM data")
+		if err != nil {
+			log.Fatal(err)
+		}
+		var response = APIResponse{Code: 200, Message: "All movies have been deleted successfully!"}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.WriteHeader(http.StatusOK)
+		json.NewEncoder(rw).Encode(response)
+	}).Methods("DELETE")
 	router.HandleFunc("/payload/upload", func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		if r.Method == http.MethodOptions {
